@@ -1,0 +1,203 @@
+import Layout from '@components/layout/layout';
+import Image from 'next/image';
+
+export const meta = {
+  title: 'JS의 typeof 연산자는 이상하게 동작한다?',
+  pid: 1,
+  description: 'JS null 객체의 typeof 연산자 실행값이 이상한 이유와 그 원인에 대해 알아보자',
+  birthTime: '2021-12-19',
+};
+
+<Layout meta={meta} title={meta.title} >
+
+<br />
+<Image src="/img/thumbnail/1.png" layout={'responsive'} width={100} height={52} />
+
+# JS의 Typeof 연산자
+
+JavaScript에는 **typeof** 라는 연산자가 존재합니다.
+
+```javascript=
+console.log(typeof 42);
+// output: "number"
+
+console.log(typeof 'blubber');
+// output: "string"
+
+console.log(typeof undefined);
+// output: "undefined"
+```
+
+위처럼 피연산자의 자료형을 나타내는 "문자열"을 반환하게 됩니다.
+당연히 이때까지는 **string**, **number**, **null**, **undefined** 등등...
+모든 타입을 체크할 수 있을거라 생각했습니다
+
+<br />
+<br />
+<br />
+
+# 문제 발생
+
+TypeScript의 type guard 기능을 사용하던 중, null 객체의 Typeof 연산자 반환 결과는 **null** 이 표시될 것으로 기대했었습니다.
+
+```typescript=
+interface objType {
+  name: null | string
+}
+
+interface availableObjType {
+  name: string
+}
+
+const obj: objType = { name: 'jiwoo' };
+const obj2: objType = { name: null };
+
+function isAvailable(arg: any): arg is availableObjType {
+  return (typeof arg === "object") &&
+    (typeof arg.name !== "null") &&
+    (typeof arg.name === "string")
+}
+
+// 아래처럼 사용하고자 했습니다.
+console.log(isAvailable(obj));
+// expected output : true
+// output : false
+
+console.log(isAvailable(obj2));
+// expected output : false
+// output : true
+```
+
+그런데, 위의 코드에서는 다음과 같은 에러가 발생합니다
+
+```javascript=
+// (Line:14) typeof arg.name !== "null" <<<<
+
+This condition will always return 'true' since the types
+'"string" | "number"| "bigint" | "boolean" |
+"symbol" | "undefined" | "object" | "function"' and
+'"null"' have no overlap.(2367)
+```
+
+<br />
+<br />
+<br />
+
+# 왜 그랬을까요?
+
+위의 에러코드에서 보이는 내용과 같이, **typeof** 연산자는 다음 데이터 타입들만 구분할 수 있습니다.
+
+```javascript=
+“string”, “number”, “boolean”, “undefined”,
+“symbol”, “object”, “function”
+// "null" 타입이 없는데요?
+
+console.log(typeof null === "object") //true
+```
+
+그런데, **typeof** 연산자가 구분할 수 있는 데이터 타입 목록에 **null** 타입이 존재하지 않습니다.
+또, **null** 값의 **typeof** 연산자 반환형이 **"object"** 라는것을 확인할 수 있습니다.
+
+어쩌다 이런 일이 생긴걸까요?
+
+<br />
+<br />
+<br />
+
+# JS의 값 저장 방식과 null 객체
+
+원인을 파악하기 위해서는 **typeof** 객체의 구현체를 살펴봐야 합니다.
+Axel Rauschmayer의 게시글을 참조해보면, JS의 [원시값(객체가 아니면서 메서드도 가지지 않는 데이터)](https://developer.mozilla.org/ko/docs/Glossary/Primitive)에는 **null**이 존재하는것으로 미루어 보아 **typeof**에서 발생하는 일은 버그일것이라고 주장하고 있습니다.
+불행하게도, 레거시 코드들을 생각하면 이제는 수정할 수 없는 문제라고 합니다.
+
+**typeof null** 문제는 초기 JavaScript에서부터 존재하였는데, 당시 JS의 구조는 다음과 같았습니다
+
+- 값을 32비트 단위로 저장하였다.
+- 해당 값의 type을 1~3 비트에 저장하고, 나머지 31~29 비트에 실제 값을 저장하였다.
+- 값의 type은 다음과 같습니다.
+  - **000** : 객체에 대한 참조값
+  - **1** : 31비트의 부호가 있는 정수값
+  - **010** : 이중 부동 소수점 숫자값
+  - **100** : 문자열에 대한 참조값
+  - **110** : 참거짓 값에 대한 참조값
+
+특이 케이스로, **undefined**의 경우에는 2^30(range를 벗어나는 숫자값)의 형태를 띄고있으며
+**null**의 경우에는 기계어 NULL pointer를 나타거나, **값 0을 참조하는 객체타입(000)의 형태를 갖고 있습니다.**
+
+다음 코드는 typeof의 판별 로직입니다
+
+```typescript
+
+// 값이 정의되지 않았는지 확인하는 메소드 입니다.
+// == 비교 연산을 통해 수행됩니다
+#define JSVAL_IS_VOID(v) ((v) == JSVAL_VOID)
+
+JS_PUBLIC_API(JSType)
+  JS_TypeOfValue(JSContext *cx, jsval v)
+  {
+    JSType type = JSTYPE_VOID;
+    JSObject *obj;
+    JSObjectOps *ops;
+    JSClass *clasp;
+    CHECK_REQUEST(cx);
+
+    if (JSVAL_IS_VOID(v)) {  // (1) undefined가 판별되는 부분
+      type = JSTYPE_VOID;
+    } else if (JSVAL_IS_OBJECT(v)) {  // (2) 값에 객체 태그가 존재하는지 확인합니다
+      obj = JSVAL_TO_OBJECT(v);
+      if (obj &&
+        (ops = obj->map->ops,
+        ops == &js_ObjectOps
+        ? (clasp = OBJ_GET_CLASS(cx, obj),
+          clasp->call || clasp == &js_FunctionClass) // (3) + (4) : 해당 값을 내부 속성 [[Class]]가 함수라고 명시하는지 확인합니다
+        : ops->call != 0)) {  // (3) 추가적으로 호출이 가능한지 여부를 확인합니다
+        type = JSTYPE_FUNCTION;
+      } else {
+        type = JSTYPE_OBJECT; // (5) null값은 이곳에 도착하게 됩니다
+      }
+    } else if (JSVAL_IS_NUMBER(v)) {
+      type = JSTYPE_NUMBER;
+    } else if (JSVAL_IS_STRING(v)) {
+      type = JSTYPE_STRING;
+    } else if (JSVAL_IS_BOOLEAN(v)) {
+      type = JSTYPE_BOOLEAN;
+    }
+    return type;
+  }
+```
+
+따라서 다음과 같이 **null** 값에 대한 검사가 존재하지 않는다는것을 알 수 있습니다
+
+```typescript
+// 만약 NULL 판별 메소드가 존재했더라면...
+#define JSVAL_IS_NULL(v) ((v) == JSVAL_NULL)
+```
+
+위와 같은 이유로 인해 **typeof** 판별 코드가 **null**을 **object** 타입이라고 판별하게 됩니다.
+해외 아티클의 글쓴이는 "아쉽지만 첫번째 JS 표준을 만드는데 시간이 별로 없었다"는 것을 기억해 달라고 하네요 :)
+
+여기까지 **JS의 Typeof 연산자**와 **null** 판별이 제대로 동작하지 않는 이유에 대해서 알아봤습니다.
+읽어주셔서 감사합니다.
+
+<br />
+<br />
+<br />
+
+# 세 줄 요약
+
+- **typeof** 연산자는 **null**의 타입을 **object**라고 판별한다
+- 이는 **null** 객체를 저장할 때, 숫자 0을 참조하는 **객체 타입의 형태**를 띄기 때문이다
+- 따라서 **typeof** 내부 로직에서는 이를 구분할 수 없었다
+
+<br />
+<br />
+<br />
+
+# 자료 출처
+
+- [MDN - typeof 연산자](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/typeof)
+- [모던 자바스크립트 Deep Dive - Operator](https://poiemaweb.com/js-operator#11-typeof-%EC%97%B0%EC%82%B0%EC%9E%90)
+- [The history of "typeof null"](https://2ality.com/2013/10/typeof-null.html)
+
+<br/>
+</Layout>
