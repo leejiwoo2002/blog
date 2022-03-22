@@ -14,9 +14,26 @@ export const meta = {
 <br />
 <Image src="/img/thumbnail/2.png" layout={'responsive'} width={100} height={52} />
 
-# Overview
+본 아티클은 React 18 Github의 [Discussion - New Suspense SSR Architecture in React 18](https://github.com/reactwg/react-18/discussions/37) 게시글을 번역한 내용을 담아두었습니다.
 
-- 본 아티클은 React 18 Github의 [Discussion - New Suspense SSR Architecture in React 18](https://github.com/reactwg/react-18/discussions/37) 게시글을 번역한 내용을 담아두었습니다.
+# 개요
+React 18은 서버 사이드 렌더링(SSR) 성능에 대한 아키텍쳐 개선 내용을 포함합니다. 이 사항들은 상당한 개선들을 포함하며, 수년간에 걸친 작업이었습니다. 개선점들의 대부분은 우리가 알지 못하는 뒷 단에서 일어나지만, 프레임워크를 사용하지 않고 순수히 React 만을 사용할 경우 알아야 할 몇 가지 매커니즘들이 있습니다.
+
+  새롭게 등장하는 API인 **renderToPipeableStream**에 대해서는 [서버에서 React 18로 업그레이드 하기](https://github.com/reactwg/react-18/discussions/22)문서에서 더 자세한 내용을 볼 수 있습니다. 현재 최종적인 내용이 아니며, 해결해야 할 사항들이 있는 만큼 릴리즈 전까지 더 자세한 내용을 작성할 게획입니다.
+
+  기존에 존재하던 API인 **< Suspense  />** 도 있습니다
+
+  본 아티클에서는 새로운 아키텍쳐와 그 설계, 그리고 이 개선점들이 해결하는 문제들에 대해 알아보고자 합니다.
+
+  # 간단 요약
+  서버사이드 렌더링(이하 SSR)을 사용하면 서버측에서 리액트 컴포넌트로 구성된 HTML을 생성할 수 있으며, 해당 HTML을 사용자에게 전송할 수 있습니다. SSR은 사용자가 JavaScript 번들을 로드하고 실행하기 전에 페이지의 컨텐츠를 볼 수 있도록 해줍니다.
+
+  React에서 SSR은 다음과 같은 단계를 거치게 됩니다.
+  - 서버단에서, React가 동작하여 앱을 위한 데이터를 fetch합니다.
+  - 서버단에서, 앱을 HTML로 렌더한 뒤, 사용자에게 해당 파일을 전송합니다.
+  - 클라이언트단에서, 앱을 사용하기 위한 JavaScript를 로드합니다.
+  - 클라이언트단에서, 서버단에서 생성된 HTML에 JavaScript 로직을 연결합니다. (이것이 "hydration" 입니다.)
+
 
 <br />
 <br />
