@@ -7,23 +7,6 @@ import Link from 'next/link';
 
 import Layout from '@components/layout/layout';
 
-const education = [{ headText: '경기대학교 컴퓨터공학부', listText: ['2014.03 ~ 2021.02'] }];
-const carrier = [
-  { headText: '노리코리아 FE developer', listText: ['2021.04.26 ~ '] },
-  { headText: '2020 Naver 부스트캠프', listText: ['2020.07.27 ~ 2020.12.18'] },
-  { headText: '2020 Naver 캠퍼스 핵데이', listText: ['2020.04.29 ~ 2020.05.22'] },
-];
-
-const skills = [
-  { headText: 'languages', listText: ['JavaScript, TypeScript'] },
-  {
-    headText: 'Front-end',
-    listText: ['HTML, CSS, React.js, Next.js,  Mui, Css-in-js, '],
-  },
-  { headText: 'Back-end', listText: ['Express.js, MySQL, Sequelize'] },
-  { headText: 'Dev-env', listText: ['eslint, prettier, Storybook, Webpack, Babel'] },
-];
-
 const About = () => {
   return (
     <Container direction={'column'} alignItems={'center'} justifyContent={'center'}>
@@ -48,10 +31,11 @@ const About = () => {
         <DescriptionText>Front-end Developer</DescriptionText>
       </InfoContainer>
       <InfoContainer sx={{ mt: '30px' }}>
+        <TitleText variant={'h2'}>Working at</TitleText>
+        <DescriptionLinkText>채널코퍼레이션 - Growth Engineer</DescriptionLinkText>
+      </InfoContainer>
+      <InfoContainer sx={{ mt: '30px' }}>
         <TitleText variant={'h2'}>GitHub</TitleText>
-        <Link href={'https://github.com/leejiwoo2021'}>
-          <DescriptionLinkText>@leejiwoo2021</DescriptionLinkText>
-        </Link>
         <Link href={'https://github.com/leejiwoo2002'}>
           <DescriptionLinkText>@leejiwoo2002</DescriptionLinkText>
         </Link>
