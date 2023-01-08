@@ -16,9 +16,12 @@ const Quote = ({children}: StrongProps) => {
 export default Quote;
 
 const Container = styled('div')(() => ({
-  borderLeft: '3px solid',
+  borderLeft: '4px solid',
   borderColor: colors.green[400],
-  paddingLeft: '10px'
+  backgroundColor: 'rgb(0, 150, 0, 0.1)',
+  paddingLeft: '20px',
+  paddingTop: '1px',
+  paddingBottom: '1px'
 }));
 
 
