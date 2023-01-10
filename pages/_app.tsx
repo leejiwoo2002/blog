@@ -32,6 +32,7 @@ function MyApp({Component, pageProps}: AppPropsWithLayout) {
       <ThemeProvider theme={theme}>
         <CssBaseline/>
         <Header/>
+        {/* @ts-ignore */}
         {getLayout(<Component {...pageProps} />)}
       </ThemeProvider>
     </MDXProvider>
