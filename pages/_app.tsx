@@ -9,6 +9,7 @@ import Header from '@components/header/header';
 import Quote from "@components/quote/quote";
 import Code from "@components/code/code";
 import Strong from "@components/strong/strong";
+import { Analytics } from '@vercel/analytics/react';
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -34,6 +35,7 @@ function MyApp({Component, pageProps}: AppPropsWithLayout) {
         <Header/>
         {/* @ts-ignore */}
         {getLayout(<Component {...pageProps} />)}
+        <Analytics/>
       </ThemeProvider>
     </MDXProvider>
   )
