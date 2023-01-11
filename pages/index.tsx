@@ -56,17 +56,15 @@ const Home = ({ articleList }: InferGetStaticPropsType<typeof getStaticProps>) =
         <meta name="viewport" content="initial-scale=1, width=device-width" />
         <meta
           name="description"
-          content="FE 개발자 이지우의 개발 블로그입니다.
-                개발하면서 겪었던 문제점들을 기록하고 공유하고자 합니다."
+          content="FE 개발 블로그. 개발하면서 겪었던 문제점들을 기록하고 공유하고자 합니다."
         />
 
         <meta property="og:title" content="Jiwoo's Devlog" />
         <meta
           property="og:description"
-          content="FE 개발자 이지우의 개발 블로그입니다.
-개발하면서 겪었던 문제점들을 기록하고 공유하고자 합니다."
+          content="FE 개발 블로그. 개발하면서 겪었던 문제점들을 기록하고 공유하고자 합니다."
         />
-        <meta property="og:site_name" content="FE 개발자 이지우의 개발 블로그" />
+        <meta property="og:site_name" content="FE 개발 블로그" />
         <meta property="og:url" content="https://jiwoo.blog" />
 
         <meta property="og:type" content="article" />
