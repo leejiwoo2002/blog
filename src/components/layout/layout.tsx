@@ -19,7 +19,7 @@ const Layout = ({title, description, meta, children}: LayoutProps) => {
           <meta name="viewport" content="initial-scale=1, width=device-width"/>
           <meta property="og:title" content={meta.title}/>
           <meta property="og:description" content={meta.description}/>
-          <meta property="og:site_name" content="FE 개발자 이지우의 개발 블로그"/>
+          <meta property="og:site_name" content="FE 개발 블로그" />
           <meta property="og:type" content="article"/>
           <meta property="og:image" content={`/img/thumbnail/${meta.pid}.png`}/>
           <meta property="og:image:width" content="1200"/>
